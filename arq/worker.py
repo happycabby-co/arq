@@ -569,6 +569,9 @@ class Worker:
         timeout_s = self.job_timeout_s if function.timeout_s is None else function.timeout_s
         incr_score: Optional[int] = None
         job_ctx = {
+            'function_name': function_name,
+            'args': args,
+            'kwargs': kwargs,
             'job_id': job_id,
             'job_try': job_try,
             'enqueue_time': ms_to_datetime(enqueue_time_ms),
@@ -655,6 +658,18 @@ class Worker:
                 job_id=job_id,
                 serializer=self.job_serializer,
             )
+
+        ctx.update(
+            {
+                'job_try': job_try,
+                'success': success,
+                'result': result,
+                'start_ms': start_ms,
+                'finished_ms': finished_ms,
+                'ref': ref,
+                'queue_name': self.queue_name,
+            }
+        )
 
         if self.on_job_end:
             await self.on_job_end(ctx)
